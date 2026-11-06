@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0b0b10"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Arc Forge</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+:root{--bg:#07070c;--surface:#12121a;--surface2:#1c1c28;--border:#2a2a3a;--text:#f0f0f5;--muted:#8b8b9e;--accent:#8b5cf6;--accent2:#38bdf8;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--xp:#38bdf8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body.theme-winter{--accent:#38bdf8;--accent2:#7dd3fc;background:#0a1628}
+body.theme-redemption{--accent:#f97316;--accent2:#fb923c;background:#1a0a08}
+body.theme-discipline{--accent:#a78bfa;--accent2:#c4b5fd;background:#0f0a1c}
+body.theme-focus{--accent:#22d3ee;--accent2:#67e8f9;background:#051a1a}
+body.theme-shadow{--accent:#a1a1aa;--accent2:#d4d4d8;background:#050505}
+body.theme-phoenix{--accent:#f43f5e;--accent2:#fb7185;background:#1a0508}
+body.theme-titan{--accent:#eab308;--accent2:#facc15;background:#1a1405}
+body.theme-monk{--accent:#34d399;--accent2:#6ee7b7;background:#051a12}
+body.theme-void{--accent:#c084fc;--accent2:#e879f9;background:#0a0514}
+body.theme-samurai{--accent:#f43f5e;--accent2:#fda4af;background:#140508}
+body.theme-cyber{--accent:#22d3ee;--accent2:#67e8f9;background:#020617}
+body.theme-beast{--accent:#ef4444;--accent2:#f87171;background:#1a0505}
+body.theme-scholar{--accent:#818cf8;--accent2:#a5b4fc;background:#0a0a1a}
+body.theme-nomad{--accent:#d97706;--accent2:#fbbf24;background:#1a1005}
+.container{max-width:1100px;margin:0 auto;padding:12px 10px 80px}
+#login-screen{position:fixed;inset:0;background:#07070c;display:flex;align-items:center;justify-content:center;z-index:9999}
+#login-screen.hidden{display:none}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px 24px;width:92%;max-width:360px;text-align:center}
+.login-box h1{font-size:1.6rem;background:linear-gradient(135deg,#8b5cf6,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.avatar-picker{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:12px 0;max-height:120px;overflow-y:auto}
+.avatar-option{width:42px;height:42px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer}
+.avatar-option.selected{border-color:var(--accent);box-shadow:0 0 10px var(--accent)}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:9px}
+.logo h1{font-size:1.25rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.user-avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.rank-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:14px;margin-top:2px}
+.stats-bar{display:flex;gap:10px;align-items:center;background:var(--surface);padding:7px 12px;border-radius:12px;border:1px solid var(--border)}
+.stat{text-align:center}.stat-value{font-size:1.05rem;font-weight:800;color:var(--xp)}.stat-label{font-size:.6rem;color:var(--muted);text-transform:uppercase}
+.xp-bar-container{width:90px}.xp-bar-bg{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:3px}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:3px;transition:width .4s}
+.combo-badge{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:7px}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:12px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px}
+.card h2{font-size:.92rem;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+label{display:block;font-size:.73rem;color:var(--muted);margin-bottom:3px}
+input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:.86rem;margin-bottom:8px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:48px}
+button{cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.8rem;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:9px 14px;width:100%}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-success{background:var(--success);color:#fff;padding:5px 10px;font-size:.73rem}
+.btn-ghost{background:transparent;color:var(--muted);padding:3px 6px;font-size:.73rem}
+.btn-ghost:hover{color:var(--danger)}
+.btn-small{background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:5px 9px;font-size:.73rem}
+.btn-small:hover{border-color:var(--accent);color:var(--accent)}
+.arc-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.arc-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.arc-item:hover,.arc-item.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface2))}
+.arc-name{font-weight:600;font-size:.86rem}.arc-meta{font-size:.66rem;color:var(--muted)}
+.empty-state{text-align:center;padding:24px 10px;color:var(--muted)}.empty-state span{font-size:1.8rem;display:block;margin-bottom:5px}
+.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tab{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 9px;border-radius:7px;font-size:.72rem;cursor:pointer}
+.tab.active{background:color-mix(in srgb,var(--accent) 18%,var(--surface2));border-color:var(--accent);color:var(--accent)}
+.quest-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;gap:8px;flex-wrap:wrap}
+.quest-list{display:flex;flex-direction:column;gap:6px}
+.quest-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 11px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.quest-item.completed{opacity:.45;border-color:var(--success)}
+.quest-item.completed .quest-title{text-decoration:line-through;color:var(--muted)}
+.quest-item.boss{border-color:var(--warning)}
+.quest-item.daily{border-color:#38bdf8}
+.quest-item.weekly{border-color:#a78bfa}
+.quest-title{font-weight:600;font-size:.88rem}.quest-desc{font-size:.73rem;color:var(--muted)}
+.quest-xp{background:color-mix(in srgb,var(--accent2) 15%,transparent);color:var(--xp);font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.actions{display:flex;gap:4px;align-items:center}
+.add-quest-form{background:var(--surface2);border:1px dashed var(--border);border-radius:9px;padding:10px;margin-top:9px}
+.form-row{display:grid;grid-template-columns:1fr 70px;gap:6px}
+.predefined{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;max-height:70px;overflow-y:auto}
+.chip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:12px;font-size:.7rem;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.energy-bar{display:flex;align-items:center;gap:5px;margin-bottom:9px;font-size:.78rem}
+.energy-pips{display:flex;gap:2px}
+.pip{width:10px;height:10px;border-radius:2px;background:var(--surface2);border:1px solid var(--border)}
+.pip.full{background:var(--accent);border-color:var(--accent)}
+.quote-box{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-left:3px solid var(--accent);padding:8px 10px;border-radius:0 7px 7px 0;font-size:.8rem;font-style:italic;color:var(--muted);margin-bottom:9px}
+.streak-badge{background:color-mix(in srgb,var(--warning) 12%,transparent);color:var(--warning);font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:5px}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:7px;max-height:380px;overflow-y:auto}
+.achievement{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px;text-align:center;font-size:.7rem;opacity:.3}
+.achievement.unlocked{opacity:1;border-color:var(--accent)}
+.achievement-icon{font-size:1.25rem;margin-bottom:2px}.achievement-name{font-weight:600}
+.diary-entry{background:var(--surface2);border-radius:7px;padding:9px;margin-bottom:5px;font-size:.82rem}
+.diary-date{font-size:.66rem;color:var(--muted);margin-bottom:2px}
+.stat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:.84rem}
+.footer-actions{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--accent);border-radius:18px;padding:28px 34px;text-align:center;max-width:90vw}
+.modal h2{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.modal .level-num{font-size:2.8rem;font-weight:900;margin:8px 0}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--surface);border:1px solid var(--accent);color:var(--text);padding:10px 14px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.45);transform:translateY(80px);opacity:0;transition:all .3s;z-index:200;font-weight:600;max-width:270px}
+.toast.show{transform:translateY(0);opacity:1}
+.hardcore-on{background:var(--danger)!important;color:#fff!important}
+.shop-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.skill-tree-container{position:relative;width:100%;height:340px;display:flex;align-items:center;justify-content:center}
+.skill-center{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;z-index:5;position:absolute;box-shadow:0 0 18px color-mix(in srgb,var(--accent) 40%,transparent)}
+.skill-node{position:absolute;width:48px;height:48px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.15rem;cursor:pointer;z-index:4;transition:transform .2s,box-shadow .2s}
+.skill-node.unlocked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 22%,var(--surface2));box-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+.skill-node.just-unlocked{animation:vibrate .5s ease}
+.skill-node.locked{opacity:.3;filter:grayscale(.7)}
+.skill-node:hover{transform:scale(1.1)}
+@keyframes vibrate{0%,100%{transform:scale(1)}25%{transform:scale(1.18) rotate(-5deg)}50%{transform:scale(1.12) rotate(5deg)}75%{transform:scale(1.15) rotate(-3deg)}}
+.skill-info{background:var(--surface2);border-radius:9px;padding:11px;margin-top:8px;font-size:.83rem}
+.skill-info h3{margin-bottom:3px;color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:2.4rem;margin-bottom:4px">⚔️</div>
+    <h1>Arc Forge</h1>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Forja tu destino</p>
+    <label style="text-align:left">Nombre</label>
+    <input type="text" id="login-name" placeholder="Tu nombre..." maxlength="18"/>
+    <label style="text-align:left">Avatar</label>
+    <div class="avatar-picker" id="avatar-picker"></div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<div class="container" id="app" style="display:none">
+  <header>
+    <div class="logo">
+      <div class="user-avatar" id="user-avatar">⚔️</div>
+      <div>
+        <h1 id="user-name">Guerrero</h1>
+        <div class="rank-badge" id="rank-badge">🥉 Bronce</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="level">1</div><div class="stat-label">Nivel</div></div>
+      <div class="stat"><div class="stat-value" id="total-xp">0</div><div class="stat-label">XP</div></div>
+      <div class="stat"><div class="stat-value" id="streak">0</div><div class="stat-label">Racha</div></div>
+      <div id="combo-display" style="display:none" class="combo-badge">x2</div>
+      <div class="xp-bar-container">
+        <div class="stat-label">XP</div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="card" style="margin-bottom:10px">
+        <h2>✦ Crear Arco</h2>
+        <div class="predefined" id="preset-chips"></div>
+        <label>Nombre</label><input type="text" id="arc-name" placeholder="Nombre..."/>
+        <label>Descripción</label><textarea id="arc-desc" placeholder="Propósito..."></textarea>
+        <label>Tema</label><select id="arc-theme"></select>
+        <button class="btn-primary" onclick="createArc()">Crear</button>
+      </div>
+      <div class="card">
+        <h2>📜 Mis Arcos</h2>
+        <div class="arc-list" id="arc-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="empty-state" id="no-selection"><span>🗺️</span>Selecciona o crea un arco</div>
+      <div id="content" style="display:none">
+        <div class="tabs">
+          <div class="tab active" data-tab="quests" onclick="switchTab('quests')">Quests</div>
+          <div class="tab" data-tab="skills" onclick="switchTab('skills')">Skills</div>
+          <div class="tab" data-tab="missions" onclick="switchTab('missions')">Misiones</div>
+          <div class="tab" data-tab="achievements" onclick="switchTab('achievements')">Logros</div>
+          <div class="tab" data-tab="diary" onclick="switchTab('diary')">Diario</div>
+          <div class="tab" data-tab="shop" onclick="switchTab('shop')">Tienda</div>
+          <div class="tab" data-tab="stats" onclick="switchTab('stats')">Stats</div>
+          <div class="tab" data-tab="settings" onclick="switchTab('settings')">Ajustes</div>
+        </div>
+
+        <div id="tab-quests">
+          <div class="quest-header">
+            <div>
+              <h2 id="arc-title" style="margin:0"></h2>
+              <p id="arc-description" style="color:var(--muted);font-size:.8rem;margin-top:2px"></p>
+              <div style="margin-top:4px"><span class="streak-badge" id="arc-streak">🔥 0</span></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.68rem;color:var(--muted)">XP arco</div>
+              <div style="font-size:1.2rem;font-weight:800;color:var(--xp)" id="arc-xp">0</div>
+            </div>
+          </div>
+          <div class="quote-box" id="quote">...</div>
+          <div class="energy-bar">
+            <span>⚡</span>
+            <div class="energy-pips" id="energy-pips"></div>
+            <span style="color:var(--muted);font-size:.74rem" id="energy-text">5/5</span>
+          </div>
+          <div class="quest-list" id="quest-list"></div>
+          <div class="add-quest-form">
+            <div class="form-row">
+              <input type="text" id="q-title" placeholder="Nueva quest..."/>
+              <input type="number" id="q-xp" value="50" min="10" max="999"/>
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="btn-primary" style="width:auto;padding:6px 10px" onclick="addQuest()">+</button>
+              <button class="btn-small" onclick="generateProceduralQuest()">✨ Generar</button>
+              <button class="btn-small" id="hardcore-btn" onclick="toggleHardcore()">Hardcore</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-skills" style="display:none">
+          <h2>🌀 Skills</h2>
+          <p style="color:var(--muted);font-size:.8rem;margin-bottom:6px">Sube de nivel para desbloquear. Haz clic para ver info.</p>
+          <div class="skill-tree-container" id="skill-tree"></div>
+          <div class="skill-info" id="skill-info"><h3>Selecciona una skill</h3></div>
+        </div>
+
+        <div id="tab-missions" style="display:none">
+          <h2>📅 Misiones</h2>
+          <div id="missions-list"></div>
+        </div>
+
+        <div id="tab-achievements" style="display:none">
+          <h2>🏆 Logros (<span id="ach-count">0</span>)</h2>
+          <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+
+        <div id="tab-diary" style="display:none">
+          <h2>📓 Diario</h2>
+          <textarea id="diary-input" placeholder="Reflexión..." style="min-height:60px"></textarea>
+          <button class="btn-primary" style="width:auto;padding:6px 11px;margin-bottom:8px" onclick="addDiaryEntry()">Guardar</button>
+          <div id="diary-list"></div>
+        </div>
+
+        <div id="tab-shop" style="display:none">
+          <h2>🛒 Tienda</h2>
+          <div class="shop-item"><div><strong>+1 Energía</strong><div style="font-size:.72rem;color:var(--muted)">50 XP</div></div><button class="btn-small" onclick="buyEnergy(1,50)">Comprar</button></div>
+          <div class="shop-item"><div><strong>+3 Energía</strong><div style="font-size:.72rem;color:var(--muted)">120 XP</div></div><button class="btn-small" onclick="buyEnergy(3,120)">Comprar</button></div>
+          <div class="shop-item"><div><strong>Rellenar</strong><div style="font-size:.72rem;color:var(--muted)">200 XP</div></div><button class="btn-small" onclick="buyEnergy(5,200)">Comprar</button></div>
+          <div class="shop-item"><div><strong>Protección racha</strong><div style="font-size:.72rem;color:var(--muted)">150 XP</div></div><button class="btn-small" onclick="buyStreakShield()">Comprar</button></div>
+        </div>
+
+        <div id="tab-stats" style="display:none">
+          <h2>📊 Stats</h2>
+          <div id="stats-content"></div>
+          <div class="footer-actions">
+            <button class="btn-small" onclick="exportData()">Exportar</button>
+            <button class="btn-small" onclick="importData()">Importar</button>
+            <button class="btn-small" onclick="shareCard()">Compartir</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)"/>
+          </div>
+        </div>
+
+        <div id="tab-settings" style="display:none">
+          <h2>⚙️ Ajustes</h2>
+          <div class="stat-row"><span>Sonidos</span><button class="btn-small" id="sound-toggle" onclick="toggleSound()">ON</button></div>
+          <div class="stat-row"><span>Usuario</span><strong id="settings-user"></strong></div>
+          <div class="stat-row"><span>Cerrar sesión</span><button class="btn-small" onclick="logout()">Salir</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="levelup-modal">
+  <div class="modal">
+    <div style="font-size:2.3rem" id="modal-icon">⚔️</div>
+    <h2>¡LEVEL UP!</h2>
+    <div class="level-num" id="modal-level">2</div>
+    <div class="rank-badge" id="modal-rank" style="font-size:.85rem;padding:4px 11px">🥈 Plata</div>
+    <div id="modal-skill" style="margin-top:10px;font-size:.88rem;color:var(--accent)"></div>
+    <button class="btn-primary" style="margin-top:16px;width:auto;padding:8px 22px" onclick="closeLevelUp()">Continuar</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const AVATARS=["⚔️","🗡️","🛡️","🏹","🔮","🐉","🐺","🦊","🦁","🦅","🐯","🐼","🖤","⚡","🔥","❄️","🌑","👑","🤖","🧘"];
+const RANKS=[{min:1,title:"Bronce",logo:"🥉"},{min:8,title:"Plata",logo:"🥈"},{min:18,title:"Oro",logo:"🥇"},{min:30,title:"Platino",logo:"💎"},{min:45,title:"Diamante",logo:"💠"},{min:65,title:"Unreal",logo:"👑"}];
+const SKILLS=[
+  {id:"xp1",name:"XP Boost I",icon:"📈",desc:"+10% XP",effect:{xpMult:1.1},levelReq:2},
+  {id:"en1",name:"Energía +1",icon:"⚡",desc:"+1 energía máx",effect:{maxEnergy:1},levelReq:3},
+  {id:"combo1",name:"Combo x1.5",icon:"🔥",desc:"Combos empiezan en x1.5",effect:{comboBase:1.5},levelReq:4},
+  {id:"shield",name:"Escudo Racha",icon:"🛡️",desc:"1 protección/día",effect:{streakShield:1},levelReq:5},
+  {id:"xp2",name:"XP Boost II",icon:"📈",desc:"+20% XP",effect:{xpMult:1.2},levelReq:7},
+  {id:"en2",name:"Batería",icon:"🔋",desc:"+2 energía",effect:{maxEnergy:2},levelReq:9},
+  {id:"boss",name:"Cazador",icon:"🐉",desc:"+50% XP Boss",effect:{bossMult:1.5},levelReq:11},
+  {id:"combo2",name:"Furia",icon:"💥",desc:"Combo hasta x3",effect:{comboMax:3},levelReq:13},
+  {id:"daily",name:"Maestro Diario",icon:"📅",desc:"+30% misiones diarias",effect:{dailyMult:1.3},levelReq:15},
+  {id:"xp3",name:"XP Boost III",icon:"🚀",desc:"+35% XP",effect:{xpMult:1.35},levelReq:18},
+  {id:"en3",name:"Generador",icon:"⚙️",desc:"+3 energía",effect:{maxEnergy:3},levelReq:21},
+  {id:"immortal",name:"Racha Inmortal",icon:"♾️",desc:"La racha no se rompe",effect:{immortalStreak:true},levelReq:25},
+  {id:"god",name:"God Mode",icon:"👑",desc:"+50% XP",effect:{xpMult:1.5,maxEnergy:5},levelReq:30}
+];
+const THEMES={winter:{name:"Winter Arc",emoji:"❄️",desc:"Páramo helado."},redemption:{name:"Redemption Arc",emoji:"🔥",desc:"Renacer de errores."},discipline:{name:"Discipline Arc",emoji:"⚡",desc:"Hábitos de acero."},focus:{name:"Focus Arc",emoji:"🎯",desc:"Concentración total."},shadow:{name:"Shadow Arc",emoji:"🌑",desc:"Abraza la oscuridad."},phoenix:{name:"Phoenix Arc",emoji:"🔥",desc:"Renacer más fuerte."},titan:{name:"Titan Arc",emoji:"💪",desc:"Fuerza de titán."},monk:{name:"Monk Arc",emoji:"🧘",desc:"Calma interior."},void:{name:"Void Arc",emoji:"🌀",desc:"Vacío mental."},samurai:{name:"Samurai Arc",emoji:"⚔️",desc:"Honor y corte limpio."},cyber:{name:"Cyber Arc",emoji:"🤖",desc:"Productividad digital."},beast:{name:"Beast Arc",emoji:"🐺",desc:"Instinto y ferocidad."},scholar:{name:"Scholar Arc",emoji:"📚",desc:"Conocimiento profundo."},nomad:{name:"Nomad Arc",emoji:"🏕️",desc:"Libertad y minimalismo."}};
+const QUEST_TEMPLATES={
+  winter:[["Levantarte a las {h}","Temprano",70],["Ducha fría {n}s","Agua fría",60],["Entrenar en frío {n}min","Con frío",90],["Sin redes {n}h","No redes",75],["Caminar {n}km","Con frío",80],["Leer {n} páginas","Libro",50]],
+  redemption:[["Pedir perdón","Sincero",120],["Eliminar mal hábito","Corta uno",100],["Ayudar a alguien","Sin esperar",90],["Escribir redención","Cómo sales",70],["Día sin quejas","Ni una",85]],
+  discipline:[["Rutina matutina","Completa",70],["Deep Work {n}min","Foco",95],["No posponer","Hazlo ya",80],["Registro diario","Logros/fallos",50],["{n} flexiones","Al despertar",55]],
+  focus:[["Pomodoro x{n}","25min",80],["Eliminar distracción","Bloquéala",90],["Una tarea {n}h","Monotarea",100],["Modo avión {n}h","Cero notif",75]],
+  shadow:[["Escribir miedos","Sin filtro",80],["Conversación difícil","Enfréntala",110],["{n}min oscuridad","Vacío",70]],
+  phoenix:[["Dejar un hábito","Entiérralo",100],["Retomar algo","Renace",90],["Entrenar al fallo","Muere/renace",95]],
+  titan:[["Series pesadas x{n}","Fuerza",90],["Comer limpio","Todo el día",70],["Dormir 8h","Recuperación",60]],
+  monk:[["Meditación {n}min","Presencia",70],["Comer en silencio","Mindful",55],["Caminar sin auriculares","Presencia",65]],
+  void:[["{n}min de nada","Cero estímulos",75],["Borrar 20 cosas","Vaciar",50]],
+  samurai:[["Corte limpio","Sin cabos",80],["Actuar con honor","El camino",110]],
+  cyber:[["Inbox zero","Cero emails",70],["Automatizar tarea","Menos trabajo",90]],
+  beast:[["Entrenar al fallo","Hasta no poder",100],["Liberar tensión","Suelta",60]],
+  scholar:[["Estudiar {n}min","Sin pausa",85],["Resumir aprendido","Enseña",70]],
+  nomad:[["Salir sin plan","Desconocido",70],["Deshacerte de 5 cosas","Minimalismo",50]]
+};
+const QUOTES={winter:["El frío forja el acero."],redemption:["Caer no es el final."],discipline:["La disciplina es el puente."],focus:["Donde va tu atención, va tu energía."],shadow:["Solo en la oscuridad brilla la luz."],phoenix:["De las cenizas nace lo más fuerte."],titan:["La fuerza no es ausencia de miedo."],monk:["La calma es poder."],void:["En el vacío todo es posible."],samurai:["Un solo corte limpio."],cyber:["Optimiza todo."],beast:["Desata el instinto."],scholar:["El conocimiento es riqueza."],nomad:["Menos posesiones, más libertad."]};
+const ACHIEVEMENTS=[
+  {id:"first_quest",name:"Primer Paso",icon:"👣",desc:"1 quest"},{id:"q5",name:"En Marcha",icon:"🚀",desc:"5 quests"},{id:"q10",name:"Constante",icon:"🔥",desc:"10 quests"},{id:"q25",name:"Veterano",icon:"⚔️",desc:"25 quests"},{id:"q50",name:"Imparable",icon:"💪",desc:"50 quests"},{id:"q100",name:"Leyenda",icon:"👑",desc:"100 quests"},
+  {id:"first_arc",name:"Forjador",icon:"⚒️",desc:"1 arco"},{id:"arcs3",name:"Coleccionista",icon:"📚",desc:"3 arcos"},{id:"arcs5",name:"Maestro",icon:"🗺️",desc:"5 arcos"},
+  {id:"lv5",name:"Aprendiz",icon:"🗡️",desc:"Nivel 5"},{id:"lv8",name:"Plata",icon:"🥈",desc:"Rango Plata"},{id:"lv18",name:"Oro",icon:"🥇",desc:"Rango Oro"},{id:"lv30",name:"Platino",icon:"💎",desc:"Platino"},{id:"lv45",name:"Diamante",icon:"💠",desc:"Diamante"},{id:"lv65",name:"Unreal",icon:"👑",desc:"Unreal"},
+  {id:"st3",name:"3 Días",icon:"🔥",desc:"Racha 3"},{id:"st7",name:"Semana",icon:"📅",desc:"Racha 7"},{id:"st14",name:"Quincena",icon:"🗓️",desc:"Racha 14"},{id:"st30",name:"Mes",icon:"🏆",desc:"Racha 30"},
+  {id:"boss1",name:"Cazador",icon:"🐉",desc:"1 Boss"},{id:"boss3",name:"Matadragones",icon:"🐲",desc:"3 Boss"},{id:"hardcore",name:"Hardcore",icon:"💀",desc:"Activa Hardcore"},
+  {id:"shop",name:"Comprador",icon:"🛒",desc:"Compra energía"},{id:"combo3",name:"Combo x3",icon:"💥",desc:"Combo x3"},{id:"combo5",name:"Furia",icon:"⚡",desc:"Combo x5"},
+  {id:"daily1",name:"Cumplidor",icon:"📋",desc:"1 diaria"},{id:"skill3",name:"Habilidoso",icon:"🌀",desc:"3 skills"},{id:"skill6",name:"Árbol",icon:"🌳",desc:"6 skills"},{id:"skillall",name:"Dios Skills",icon:"👑",desc:"Todas"},
+  {id:"diary1",name:"Reflexivo",icon:"📓",desc:"1 diario"},{id:"diary10",name:"Cronista",icon:"✍️",desc:"10 diarios"},
+  {id:"xp1k",name:"Mil XP",icon:"💯",desc:"1000 XP"},{id:"xp5k",name:"5K XP",icon:"💎",desc:"5000 XP"},{id:"perfect",name:"Día Perfecto",icon:"⭐",desc:"5 quests/día"},
+  {id:"early",name:"Madrugador",icon:"🌅",desc:"Quest <7h"},{id:"night",name:"Búho",icon:"🦉",desc:"Quest >22h"},{id:"login",name:"Bienvenido",icon:"👋",desc:"Login"},
+  {id:"share",name:"Social",icon:"📤",desc:"Compartir"},{id:"export",name:"Backup",icon:"💾",desc:"Exportar"},
+  ...Array.from({length:60},(_,i)=>({id:`s${i}`,name:`Secreto ${i+1}`,icon:"🔒",desc:`Oculto #${i+1}`}))
+];
+
+let state={user:null,arcs:[],selectedArcId:null,totalXP:0,level:1,streak:0,lastActiveDate:null,energy:5,maxEnergy:5,energyDate:null,hardcore:false,achievements:{},diary:{},soundEnabled:true,skills:{},combo:0,lastQuestDate:null,dailyMissions:[],weeklyMissions:[],streakShield:0,questsToday:0};
+let selectedAvatar="⚔️";
+let skillTreeRendered=false;
+
+const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+function playSound(type){
+  if(!state.soundEnabled)return;
+  try{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    if(type==="complete"){o.frequency.setValueAtTime(520,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(780,audioCtx.currentTime+.12);g.gain.setValueAtTime(.1,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25);o.start();o.stop(audioCtx.currentTime+.25)}
+    else if(type==="levelup"){o.type="square";o.frequency.setValueAtTime(300,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(800,audioCtx.currentTime+.35);g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.4);o.start();o.stop(audioCtx.currentTime+.4)}
+    else if(type==="click"){o.frequency.value=360;g.gain.setValueAtTime(.03,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.06);o.start();o.stop(audioCtx.currentTime+.06)}
+    else if(type==="skill"){o.frequency.setValueAtTime(600,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(1100,audioCtx.currentTime+.2);g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25);o.start();o.stop(audioCtx.currentTime+.25)}
+  }catch(e){}
+}
+
+function save(){try{localStorage.setItem('arcForgeGod',JSON.stringify(state))}catch(e){}}
+function load(){
+  try{
+    const s=localStorage.getItem('arcForgeGod');
+    if(s){state=JSON.parse(s);if(state.user){document.getElementById('login-screen').classList.add('hidden');document.getElementById('app').style.display='block'}}
+  }catch(e){}
+  checkDailyReset();updateUI();
+}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function xpForLevel(l){return Math.floor(200+l*45)}
+function calcLevel(xp){let l=1,r=xp;while(r>=xpForLevel(l)){r-=xpForLevel(l);l++}return{level:l,remaining:r,needed:xpForLevel(l)}}
+function getRank(l){let r=RANKS[0];for(const x of RANKS)if(l>=x.min)r=x;return r}
+function getSkillEffects(){
+  let xpMult=1,maxEnergyBonus=0,bossMult=1,comboBase=1,comboMax=2.5;
+  Object.keys(state.skills).forEach(id=>{
+    if(!state.skills[id])return;
+    const sk=SKILLS.find(s=>s.id===id);if(!sk)return;
+    if(sk.effect.xpMult)xpMult=Math.max(xpMult,sk.effect.xpMult);
+    if(sk.effect.maxEnergy)maxEnergyBonus+=sk.effect.maxEnergy;
+    if(sk.effect.bossMult)bossMult=sk.effect.bossMult;
+    if(sk.effect.comboBase)comboBase=sk.effect.comboBase;
+    if(sk.effect.comboMax)comboMax=sk.effect.comboMax;
+  });
+  return{xpMult,maxEnergyBonus,bossMult,comboBase,comboMax};
+}
+function checkDailyReset(){
+  const today=new Date().toDateString();
+  if(state.energyDate!==today){
+    const eff=getSkillEffects();
+    state.maxEnergy=5+eff.maxEnergyBonus;
+    state.energy=state.maxEnergy;
+    state.energyDate=today;state.questsToday=0;state.combo=0;
+    generateDailyMissions();
+  }
+  if(state.lastActiveDate){
+    const diff=Math.floor((new Date()-new Date(state.lastActiveDate))/86400000);
+    if(diff>1&&!state.skills.immortal&&state.streakShield<=0)state.streak=0;
+    else if(diff>1&&state.streakShield>0)state.streakShield--;
+  }
+}
+function registerActivity(){
+  const today=new Date().toDateString();
+  if(state.lastActiveDate!==today){
+    const last=state.lastActiveDate?new Date(state.lastActiveDate):null;
+    if(last){const diff=Math.floor((new Date()-last)/86400000);if(diff===1)state.streak++;else if(diff>1)state.streak=1}
+    else state.streak=1;
+    state.lastActiveDate=today;
+  }
+}
+function generateDailyMissions(){
+  state.dailyMissions=[
+    {id:'d0',title:"Completa 2 quests",desc:"Cualquier quest",xp:80,target:2,progress:0,type:"quests",completed:false},
+    {id:'d1',title:"Gana 120 XP",desc:"Suma del día",xp:60,target:120,progress:0,type:"xp",completed:false}
+  ];
+  if(!state.weeklyMissions?.length||new Date().getDay()===1){
+    state.weeklyMissions=[
+      {id:'w0',title:"10 quests esta semana",desc:"Acumula 10",xp:200,target:10,progress:0,type:"quests",completed:false},
+      {id:'w1',title:"Combo x3",desc:"3 quests seguidas",xp:150,target:1,progress:0,type:"combo",completed:false}
+    ];
+  }
+}
+
+document.getElementById('avatar-picker').innerHTML=AVATARS.map(a=>`<div class="avatar-option ${a==='⚔️'?'selected':''}" data-avatar="${a}">${a}</div>`).join('');
+document.querySelectorAll('.avatar-option').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.avatar-option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');selectedAvatar=el.dataset.avatar;playSound('click')}});
+function doLogin(){const name=document.getElementById('login-name').value.trim()||"Guerrero";state.user={name,avatar:selectedAvatar};unlockAchievement("login");save();document.getElementById('login-screen').classList.add('hidden');document.getElementById('app').style.display='block';updateUI();playSound('levelup');showToast("Bienvenido, "+name)}
+function logout(){if(confirm("¿Cerrar sesión?")){state.user=null;save();location.reload()}}
+
+function fillPreset(key){const t=THEMES[key];document.getElementById('arc-name').value=t.name;document.getElementById('arc-theme').value=key;document.getElementById('arc-desc').value=t.desc;playSound('click')}
+function createArc(){
+  const name=document.getElementById('arc-name').value.trim(),desc=document.getElementById('arc-desc').value.trim(),theme=document.getElementById('arc-theme').value;
+  if(!name)return showToast("Escribe un nombre");
+  const id=Date.now().toString(),templates=QUEST_TEMPLATES[theme]||QUEST_TEMPLATES.discipline,quests=[],used=new Set();
+  while(quests.length<5){const t=templates[Math.floor(Math.random()*templates.length)];if(used.has(t[0]))continue;used.add(t[0]);const h=5+Math.floor(Math.random()*3),n=12+Math.floor(Math.random()*40),d=2+Math.floor(Math.random()*4);
+  quests.push({id:id+'-'+quests.length,title:t[0].replace('{h}',h).replace('{n}',n).replace('{d}',d),desc:t[1],xp:t[2]+Math.floor(Math.random()*15)-5,completed:false,boss:false})}
+  quests.push({id:id+'-boss',title:"🐉 BOSS: "+name,desc:"Completa todo + diario",xp:280,completed:false,boss:true});
+  state.arcs.unshift({id,name,desc,theme,quests,createdAt:new Date().toISOString()});
+  state.selectedArcId=id;unlockAchievement("first_arc");
+  if(state.arcs.length>=3)unlockAchievement("arcs3");if(state.arcs.length>=5)unlockAchievement("arcs5");
+  save();updateUI();playSound('complete');showToast(`Arco "${name}" creado`);
+  document.getElementById('arc-name').value='';document.getElementById('arc-desc').value='';
+}
+function selectArc(id){state.selectedArcId=id;skillTreeRendered=false;save();updateUI();playSound('click')}
+function deleteArc(id,e){e.stopPropagation();if(confirm("¿Eliminar?")){state.arcs=state.arcs.filter(a=>a.id!==id);if(state.selectedArcId===id)state.selectedArcId=null;save();updateUI()}}
+
+function completeQuest(arcId,questId){
+  if(state.energy<=0)return showToast("⚡ Sin energía");
+  const arc=state.arcs.find(a=>a.id===arcId),quest=arc?.quests.find(q=>q.id===questId);
+  if(!quest||quest.completed)return;
+  const today=new Date().toDateString();
+  if(state.lastQuestDate===today)state.combo++;else state.combo=1;
+  state.lastQuestDate=today;state.questsToday++;
+  const eff=getSkillEffects();
+  let mult=eff.xpMult;
+  if(quest.boss)mult*=eff.bossMult;
+  if(state.combo>=2)mult*=Math.min(eff.comboBase+(state.combo-1)*0.25,eff.comboMax);
+  if(state.combo>=3)unlockAchievement("combo3");if(state.combo>=5)unlockAchievement("combo5");
+  if(state.questsToday>=5)unlockAchievement("perfect");
+  const gained=Math.floor(quest.xp*mult);
+  quest.completed=true;state.energy--;state.totalXP+=gained;registerActivity();
+  if(quest.boss){unlockAchievement("boss1");const b=state.arcs.reduce((s,a)=>s+a.quests.filter(q=>q.boss&&q.completed).length,0);if(b>=3)unlockAchievement("boss3")}
+  state.dailyMissions.forEach(m=>{if(m.type==="quests")m.progress++;if(m.type==="xp")m.progress+=gained;if(m.progress>=m.target&&!m.completed){m.completed=true;state.totalXP+=m.xp;unlockAchievement("daily1");showToast(`Diaria +${m.xp}XP`)}});
+  state.weeklyMissions.forEach(m=>{if(m.type==="quests")m.progress++;if(m.type==="combo"&&state.combo>=3)m.progress=1;if(m.progress>=m.target&&!m.completed){m.completed=true;state.totalXP+=m.xp;showToast(`Semanal +${m.xp}XP`)}});
+  const totalQ=state.arcs.reduce((s,a)=>s+a.quests.filter(q=>q.completed).length,0);
+  if(totalQ===1)unlockAchievement("first_quest");if(totalQ>=5)unlockAchievement("q5");if(totalQ>=10)unlockAchievement("q10");
+  if(totalQ>=25)unlockAchievement("q25");if(totalQ>=50)unlockAchievement("q50");if(totalQ>=100)unlockAchievement("q100");
+  if(state.streak>=3)unlockAchievement("st3");if(state.streak>=7)unlockAchievement("st7");if(state.streak>=14)unlockAchievement("st14");if(state.streak>=30)unlockAchievement("st30");
+  if(state.totalXP>=1000)unlockAchievement("xp1k");if(state.totalXP>=5000)unlockAchievement("xp5k");
+  const hour=new Date().getHours();if(hour<7)unlockAchievement("early");if(hour>=22)unlockAchievement("night");
+  const{level}=calcLevel(state.totalXP);const oldLevel=state.level;state.level=level;
+  if(level>=5)unlockAchievement("lv5");if(level>=8)unlockAchievement("lv8");if(level>=18)unlockAchievement("lv18");
+  if(level>=30)unlockAchievement("lv30");if(level>=45)unlockAchievement("lv45");if(level>=65)unlockAchievement("lv65");
+  let newSkill=null;
+  SKILLS.forEach(sk=>{if(level>=sk.levelReq&&!state.skills[sk.id]){state.skills[sk.id]=true;newSkill=sk}});
+  const sc=Object.keys(state.skills).filter(k=>state.skills[k]).length;
+  if(sc>=3)unlockAchievement("skill3");if(sc>=6)unlockAchievement("skill6");if(sc>=SKILLS.length)unlockAchievement("skillall");
+  save();updateUI();playSound("complete");
+  showToast(`+${gained} XP${state.combo>1?' • x'+state.combo:''}`);
+  if(level>oldLevel)setTimeout(()=>showLevelUp(level,newSkill),400);
+}
+function addQuest(){const title=document.getElementById('q-title').value.trim(),xp=parseInt(document.getElementById('q-xp').value)||50;if(!title)return showToast("Escribe título");const arc=state.arcs.find(a=>a.id===state.selectedArcId);if(!arc)return;arc.quests.push({id:Date.now().toString(),title,desc:"",xp,completed:false,boss:false});document.getElementById('q-title').value='';save();updateUI();showToast("Quest añadida")}
+function generateProceduralQuest(){const arc=state.arcs.find(a=>a.id===state.selectedArcId);if(!arc)return;const templates=QUEST_TEMPLATES[arc.theme]||QUEST_TEMPLATES.discipline;const t=templates[Math.floor(Math.random()*templates.length)];const h=5+Math.floor(Math.random()*3),n=10+Math.floor(Math.random()*40),d=2+Math.floor(Math.random()*4);document.getElementById('q-title').value=t[0].replace('{h}',h).replace('{n}',n).replace('{d}',d);document.getElementById('q-xp').value=t[2]+Math.floor(Math.random()*20)-5;playSound('click');showToast("✨ Generada")}
+function toggleHardcore(){state.hardcore=!state.hardcore;if(state.hardcore)unlockAchievement("hardcore");save();updateUI();showToast(state.hardcore?"💀 Hardcore ON":"Hardcore OFF")}
+function toggleSound(){state.soundEnabled=!state.soundEnabled;document.getElementById('sound-toggle').textContent=state.soundEnabled?"ON":"OFF";save()}
+function buyEnergy(amount,cost){if(state.totalXP<cost)return showToast("XP insuficiente");if(state.energy>=state.maxEnergy)return showToast("Energía máxima");state.totalXP-=cost;state.energy=Math.min(state.maxEnergy,state.energy+amount);unlockAchievement("shop");save();updateUI();playSound("complete");showToast(`+${amount} Energía`)}
+function buyStreakShield(){if(state.totalXP<150)return showToast("XP insuficiente");state.totalXP-=150;state.streakShield++;save();updateUI();showToast("🛡️ Protección adquirida")}
+function addDiaryEntry(){const text=document.getElementById('diary-input').value.trim();if(!text)return;if(!state.diary[state.selectedArcId])state.diary[state.selectedArcId]=[];state.diary[state.selectedArcId].unshift({date:new Date().toLocaleString('es'),text});document.getElementById('diary-input').value='';const n=Object.values(state.diary).flat().length;if(n===1)unlockAchievement("diary1");if(n>=10)unlockAchievement("diary10");save();updateUI();showToast("Guardado")}
+function unlockAchievement(id){if(state.achievements[id])return;state.achievements[id]=true;const ach=ACHIEVEMENTS.find(a=>a.id===id);if(ach)setTimeout(()=>showToast("🏆 "+ach.name),250)}
+function showLevelUp(level,newSkill){const rank=getRank(level);document.getElementById('modal-level').textContent=level;document.getElementById('modal-rank').textContent=`${rank.logo} ${rank.title}`;document.getElementById('modal-icon').textContent=rank.logo;document.getElementById('modal-skill').textContent=newSkill?`🌀 ${newSkill.icon} ${newSkill.name}`:'';document.getElementById('levelup-modal').classList.add('show');playSound("levelup");if(newSkill){skillTreeRendered=false;setTimeout(()=>playSound("skill"),300)}}
+function closeLevelUp(){document.getElementById('levelup-modal').classList.remove('show')}
+function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelector(`[data-tab="${tab}"]`).classList.add('active');['quests','skills','missions','achievements','diary','shop','stats','settings'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display=t===tab?'block':'none'});if(tab==='skills')renderSkillTree();playSound('click')}
+function exportData(){const blob=new Blob([JSON.stringify(state)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='arc-forge.json';a.click();unlockAchievement("export");showToast("Exportado")}
+function importData(){document.getElementById('import-file').click()}
+function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{state=JSON.parse(ev.target.result);save();updateUI();showToast("Importado")}catch{showToast("Error")}};r.readAsText(f)}
+function shareCard(){const rank=getRank(state.level);const text=`⚔️ Arc Forge\n${state.user?.name} — Nv.${state.level} ${rank.logo} ${rank.title}\n${state.totalXP} XP | Racha ${state.streak}d\n`;if(navigator.share)navigator.share({title:'Arc Forge',text});else{navigator.clipboard.writeText(text);showToast("Copiado")}unlockAchievement("share")}
+
+function renderSkillTree(){
+  if(skillTreeRendered)return;
+  const container=document.getElementById('skill-tree');
+  const w=container.offsetWidth||300,cx=w/2,cy=170,radius=115;
+  let html=`<div class="skill-center">🌀</div>`;
+  SKILLS.forEach((sk,i)=>{
+    const angle=(i/SKILLS.length)*Math.PI*2-Math.PI/2;
+    const x=cx+Math.cos(angle)*radius-24,y=cy+Math.sin(angle)*radius-24;
+    const unlocked=!!state.skills[sk.id];
+    html+=`<div class="skill-node ${unlocked?'unlocked just-unlocked':(state.level>=sk.levelReq?'':'locked')}" style="left:${x}px;top:${y}px" onclick="showSkillInfo('${sk.id}')">${sk.icon}</div>`;
+  });
+  container.innerHTML=html;
+  skillTreeRendered=true;
+  setTimeout(()=>{document.querySelectorAll('.just-unlocked').forEach(n=>n.classList.remove('just-unlocked'))},600);
+}
+function showSkillInfo(id){const sk=SKILLS.find(s=>s.id===id);if(!sk)return;const unlocked=!!state.skills[id];document.getElementById('skill-info').innerHTML=`<h3>${sk.icon} ${sk.name}</h3><p>${sk.desc}</p><p style="margin-top:5px;font-size:.78rem;color:var(--muted)">Nivel ${sk.levelReq} ${unlocked?'• <span style="color:var(--success)">ACTIVA</span>':''}</p>`}
+
+function updateUI(){
+  if(!state.user)return;
+  const{level,remaining,needed}=calcLevel(state.totalXP);state.level=level;
+  const rank=getRank(level),eff=getSkillEffects();
+  state.maxEnergy=5+eff.maxEnergyBonus;
+  document.getElementById('user-name').textContent=state.user.name;
+  document.getElementById('user-avatar').textContent=state.user.avatar;
+  document.getElementById('rank-badge').textContent=`${rank.logo} ${rank.title}`;
+  document.getElementById('level').textContent=level;
+  document.getElementById('total-xp').textContent=state.totalXP;
+  document.getElementById('streak').textContent=state.streak;
+  document.getElementById('xp-bar').style.width=Math.min(100,(remaining/needed)*100)+'%';
+  document.getElementById('settings-user').textContent=state.user.name;
+  document.getElementById('sound-toggle').textContent=state.soundEnabled?"ON":"OFF";
+  document.getElementById('combo-display').style.display=state.combo>=2?'block':'none';
+  document.getElementById('combo-display').textContent=`x${state.combo}`;
+
+  const chips=document.getElementById('preset-chips');
+  if(!chips.children.length)chips.innerHTML=Object.keys(THEMES).map(k=>`<div class="chip" onclick="fillPreset('${k}')">${THEMES[k].emoji} ${THEMES[k].name.replace(' Arc','')}</div>`).join('');
+  const sel=document.getElementById('arc-theme');
+  if(!sel.children.length)sel.innerHTML=Object.keys(THEMES).map(k=>`<option value="${k}">${THEMES[k].emoji} ${THEMES[k].name}</option>`).join('');
+
+  const selected=state.arcs.find(a=>a.id===state.selectedArcId);
+  document.body.className=selected?`theme-${selected.theme}`:'';
+
+  const list=document.getElementById('arc-list');
+  if(!state.arcs.length)list.innerHTML=`<div class="empty-state"><span>⚔️</span>Sin arcos</div>`;
+  else list.innerHTML=state.arcs.map(a=>{const done=a.quests.filter(q=>q.completed).length;return`<div class="arc-item ${a.id===state.selectedArcId?'active':''}" onclick="selectArc('${a.id}')"><div><div class="arc-name">${THEMES[a.theme]?.emoji||'⚔️'} ${a.name}</div><div class="arc-meta">${done}/${a.quests.length}</div></div><button class="btn-ghost" onclick="deleteArc('${a.id}',event)">✕</button></div>`}).join('');
+
+  if(!selected){document.getElementById('no-selection').style.display='block';document.getElementById('content').style.display='none';return}
+  document.getElementById('no-selection').style.display='none';document.getElementById('content').style.display='block';
+  document.getElementById('arc-title').textContent=selected.name;
+  document.getElementById('arc-description').textContent=selected.desc||'';
+  document.getElementById('arc-xp').textContent=selected.quests.reduce((s,q)=>s+(q.completed?q.xp:0),0);
+  document.getElementById('arc-streak').textContent=`🔥 ${state.streak}`;
+  const quotes=QUOTES[selected.theme]||QUOTES.discipline;
+  document.getElementById('quote').textContent=quotes[Math.floor(Math.random()*quotes.length)];
+
+  const pips=document.getElementById('energy-pips');pips.innerHTML='';
+  for(let i=0;i<state.maxEnergy;i++){const d=document.createElement('div');d.className='pip'+(i<state.energy?' full':'');pips.appendChild(d)}
+  document.getElementById('energy-text').textContent=`${state.energy}/${state.maxEnergy}`;
+  const hc=document.getElementById('hardcore-btn');hc.textContent=state.hardcore?'💀 ON':'Hardcore';hc.className=state.hardcore?'btn-small hardcore-on':'btn-small';
+
+  document.getElementById('quest-list').innerHTML=selected.quests.map(q=>`<div class="quest-item ${q.completed?'completed':''} ${q.boss?'boss':''}"><div class="quest-info"><div class="quest-title">${q.title}</div>${q.desc?`<div class="quest-desc">${q.desc}</div>`:''}</div><div class="actions"><span class="quest-xp">+${q.xp}</span>${!q.completed?`<button class="btn-success" onclick="completeQuest('${selected.id}','${q.id}')">✓</button>`:'<span style="color:var(--success)">✓</span>'}</div></div>`).join('');
+
+  const diary=state.diary[selected.id]||[];
+  document.getElementById('diary-list').innerHTML=diary.length?diary.map(e=>`<div class="diary-entry"><div class="diary-date">${e.date}</div>${e.text}</div>`).join(''):'<div class="empty-state" style="padding:12px">Sin entradas</div>';
+
+  const unlocked=Object.keys(state.achievements).length;
+  document.getElementById('ach-count').textContent=unlocked;
+  // Only render unlocked + first 20 locked to avoid lag
+  const toShow=ACHIEVEMENTS.filter(a=>state.achievements[a.id]).concat(ACHIEVEMENTS.filter(a=>!state.achievements[a.id]).slice(0,25));
+  document.getElementById('achievements-grid').innerHTML=toShow.map(a=>`<div class="achievement ${state.achievements[a.id]?'unlocked':''}"><div class="achievement-icon">${a.icon}</div><div class="achievement-name">${a.name}</div></div>`).join('');
+
+  document.getElementById('missions-list').innerHTML=`
+    <h3 style="margin:8px 0 5px;font-size:.88rem">Diarias</h3>
+    ${(state.dailyMissions||[]).map(m=>`<div class="quest-item daily ${m.completed?'completed':''}"><div class="quest-info"><div class="quest-title">${m.title}</div><div class="quest-desc">${m.progress}/${m.target}</div></div><span class="quest-xp">+${m.xp}</span></div>`).join('')||'<p style="color:var(--muted);font-size:.8rem">Ninguna</p>'}
+    <h3 style="margin:12px 0 5px;font-size:.88rem">Semanales</h3>
+    ${(state.weeklyMissions||[]).map(m=>`<div class="quest-item weekly ${m.completed?'completed':''}"><div class="quest-info"><div class="quest-title">${m.title}</div><div class="quest-desc">${m.progress}/${m.target}</div></div><span class="quest-xp">+${m.xp}</span></div>`).join('')||'<p style="color:var(--muted);font-size:.8rem">Ninguna</p>'}
+  `;
+
+  const totalQ=state.arcs.reduce((s,a)=>s+a.quests.length,0),doneQ=state.arcs.reduce((s,a)=>s+a.quests.filter(q=>q.completed).length,0);
+  document.getElementById('stats-content').innerHTML=`
+    <div class="stat-row"><span>Nivel</span><strong>${level}</strong></div>
+    <div class="stat-row"><span>Rango</span><strong>${rank.logo} ${rank.title}</strong></div>
+    <div class="stat-row"><span>XP</span><strong>${state.totalXP}</strong></div>
+    <div class="stat-row"><span>Racha</span><strong>${state.streak}d</strong></div>
+    <div class="stat-row"><span>Combo</span><strong>x${state.combo}</strong></div>
+    <div class="stat-row"><span>Skills</span><strong>${Object.keys(state.skills).length}/${SKILLS.length}</strong></div>
+    <div class="stat-row"><span>Arcos</span><strong>${state.arcs.length}</strong></div>
+    <div class="stat-row"><span>Quests</span><strong>${doneQ}/${totalQ}</strong></div>
+    <div class="stat-row"><span>Logros</span><strong>${unlocked}/${ACHIEVEMENTS.length}</strong></div>
+  `;
+}
+load();
+</script>
+</body>
+</html>
